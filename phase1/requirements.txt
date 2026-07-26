@@ -1,0 +1,12 @@
+numpy
+tiktoken
+tqdm
+datasets
+
+# torch n'est volontairement pas ici : l'installation depend du hardware cible.
+#   - Machine locale sans GPU NVIDIA (ex: ce PC) :
+#       pip install torch --index-url https://download.pytorch.org/whl/cpu
+#   - GPU cloud loue (A100/H100/RTX, Linux, CUDA) ou Colab :
+#       pip install torch
+#     (recupere par defaut la build CUDA la plus recente ; verifier sur pytorch.org
+#      si l'image cloud impose une version CUDA specifique)

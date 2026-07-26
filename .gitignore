@@ -5,4 +5,8 @@ phase0/data/
 phase0/data_smoke/
 phase0/checkpoints/
 phase0/checkpoints_smoke/
+phase1/data/
+phase1/data_smoke/
+phase1/checkpoints/
+phase1/checkpoints_smoke/
 .impeccable/
