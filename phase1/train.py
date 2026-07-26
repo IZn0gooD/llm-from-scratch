@@ -27,13 +27,30 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from model import ModelConfig, ToyLLM
 
 
+def colab_drive_dir(subdir):
+    """Sur Google Colab, monte le Drive (si pas deja monte) et retourne un chemin persistant dessus.
+    Hors Colab, retourne None (l'appelant utilise alors un chemin local)."""
+    try:
+        import google.colab  # noqa: F401
+    except ImportError:
+        return None
+    if not os.path.isdir("/content/drive/MyDrive"):
+        from google.colab import drive
+        drive.mount("/content/drive")
+    base = "/content/drive/MyDrive/llm-phase1"
+    os.makedirs(base, exist_ok=True)
+    return os.path.join(base, subdir)
+
+
 def parse_args():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     here = os.path.dirname(os.path.abspath(__file__))
-    # donnees / sortie
-    ap.add_argument("--data_dir", default=os.path.join(here, "data"))
-    ap.add_argument("--out_dir", default=os.path.join(here, "checkpoints"))
-    ap.add_argument("--resume", action="store_true", help="reprend depuis out_dir/last.pt s'il existe")
+    default_data_dir = colab_drive_dir("data") or os.path.join(here, "data")
+    default_out_dir = colab_drive_dir("checkpoints") or os.path.join(here, "checkpoints")
+    # donnees / sortie (par defaut : local hors Colab, sinon /content/drive/MyDrive/llm-phase1/... , Drive monte automatiquement)
+    ap.add_argument("--data_dir", default=default_data_dir)
+    ap.add_argument("--out_dir", default=default_out_dir)
+    ap.add_argument("--resume", action="store_true", help="reprend depuis out_dir/last.pt s'il existe (essentiel sur Colab, les checkpoints survivent sur Drive entre sessions)")
     # architecture (~320M params par defaut : dim=1024, 24 layers, 16 heads / 4 kv_heads, seq 1024)
     ap.add_argument("--vocab_size", type=int, default=50304)
     ap.add_argument("--dim", type=int, default=1024)

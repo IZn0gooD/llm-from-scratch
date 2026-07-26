@@ -23,6 +23,21 @@ DATASET_NAME = "HuggingFaceFW/fineweb-edu"
 DATASET_CONFIG = "sample-10BT"
 
 
+def colab_drive_dir(subdir):
+    """Sur Google Colab, monte le Drive (si pas deja monte) et retourne un chemin persistant dessus.
+    Hors Colab, retourne None (l'appelant utilise alors un chemin local)."""
+    try:
+        import google.colab  # noqa: F401
+    except ImportError:
+        return None
+    if not os.path.isdir("/content/drive/MyDrive"):
+        from google.colab import drive
+        drive.mount("/content/drive")
+    base = "/content/drive/MyDrive/llm-phase1"
+    os.makedirs(base, exist_ok=True)
+    return os.path.join(base, subdir)
+
+
 def tokenize_doc(enc, eot, text):
     ids = enc.encode_ordinary(text)
     ids.append(eot)
@@ -31,7 +46,8 @@ def tokenize_doc(enc, eot, text):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--out_dir", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "data"))
+    default_out_dir = colab_drive_dir("data") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+    ap.add_argument("--out_dir", default=default_out_dir, help="par defaut : local hors Colab, sinon /content/drive/MyDrive/llm-phase1/data (Drive monte automatiquement)")
     ap.add_argument("--shard_size", type=int, default=100_000_000, help="tokens par shard (defaut 100M, ~200MB en uint16)")
     ap.add_argument("--max_tokens", type=int, default=None, help="plafonne le nb total de tokens tokenises (test rapide)")
     args = ap.parse_args()
